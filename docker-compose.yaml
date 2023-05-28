@@ -3,6 +3,7 @@ services:
   twitter:
     container_name: twitter
     image: zhekangpeng/twitter
+    tty: true
     ports:
       - "8000:8000"
     command: python manage.py runserver 0.0.0.0:8000
