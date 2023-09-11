@@ -11,7 +11,7 @@ class LoginSerializer(serializers.Serializer):
     username = serializers.CharField()
     password = serializers.CharField()
 
-    def validate(self,data):
+    def validate(self, data):
         if not User.objects.filter(username=data['username'].lower()).exists():
             raise ValidationError({
                 "username": "User does not exist"
@@ -19,8 +19,8 @@ class LoginSerializer(serializers.Serializer):
         return data
 
 class SignupSerializer(serializers.HyperlinkedModelSerializer):
-    username = serializers.CharField(min_length = 6, max_length = 20)
-    password = serializers.CharField(min_length = 6, max_length = 20)
+    username = serializers.CharField(min_length=6, max_length=20)
+    password = serializers.CharField(min_length=6, max_length=20)
     email = serializers.EmailField()
 
     class Meta:
