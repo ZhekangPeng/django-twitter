@@ -9,7 +9,6 @@ LOGIN_STATUS_URL = '/api/accounts/login_status/'
 
 class AccountApiTests(TestCase):
     def setUp(self):
-        # 这个函数会在每个 test function 执行的时候被执行
         self.client = APIClient()
         self.user = self.createUser(
             username='Zach',
@@ -42,11 +41,11 @@ class AccountApiTests(TestCase):
         # Test correct credential is provided
         response = self.client.post(LOGIN_URL, {
             'username': self.user.username,
-            'password': self.user.password,
+            'password': "pzk619859065",
         })
         self.assertEqual(response.status_code, 200)
         self.assertNotEqual(response.data['user'], None)
-        self.assertEqual(response.data['email'], self.user.email)
+        self.assertEqual(response.data['user']['email'], self.user.email)
 
         # Test user has logged in
         response = self.client.get(LOGIN_STATUS_URL)
@@ -57,7 +56,7 @@ class AccountApiTests(TestCase):
         # User logs in first
         self.client.post(LOGIN_URL, {
             'username': self.user.username,
-            'password': self.user.password,
+            'password': "pzk619859065",
         })
 
         # Test user is logged in
