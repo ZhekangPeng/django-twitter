@@ -18,10 +18,12 @@ from django.urls import path
 from rest_framework import routers
 from accounts.api.views import UserViewSet, AccountViewSet
 from django.conf.urls import include
+from tweets.api.views import TweetViewSet
 
 router = routers.DefaultRouter()
 router.register(r'api/users', UserViewSet)
 router.register(r'api/accounts', AccountViewSet, basename='accounts')
+router.register(r'api/tweets', TweetViewSet, basename='tweets')
 #router.register(r'api/accounts/logout', AccountViewSet)
 
 urlpatterns = [
