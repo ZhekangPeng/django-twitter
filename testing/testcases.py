@@ -10,8 +10,7 @@ class TestCase(DjangoTestCase):
             password = 'generic password'
         if email is None:
             email = f'{username}@gmail.com'
-        # 不能写成 User.objects.create()
-        # 因为 password 需要被加密, username 和 email 需要进行一些 normalize 处理
+
         return User.objects.create_user(username, email, password)
 
     def create_tweet(self, user, content=None):
