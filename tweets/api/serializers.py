@@ -2,6 +2,7 @@ from accounts.api.serializers import UserSerializer
 from rest_framework import serializers
 from tweets.models import Tweet
 
+
 class TweetSerializer(serializers.ModelSerializer):
     user = UserSerializer()
     class Meta:

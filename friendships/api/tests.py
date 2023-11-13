@@ -11,8 +11,6 @@ FOLLOWERS_API = '/api/friendships/{}/followers/'
 class FriendshipAPITests(TestCase):
     def setUp(self):
         # Create users
-        self.anonymous_client = APIClient()
-
         self.xiaohe = self.create_user('xiaohe')
         self.xiaohe_client = APIClient()
         self.xiaohe_client.force_authenticate(self.xiaohe)
