@@ -10,7 +10,7 @@ services:
       - "3306:3306"
     restart: always
     volumes:
-      - /usr/local/mysql/data:/var/lib/mysql
+      - ${HOME}/local/mysql/data:/var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: 123456
 

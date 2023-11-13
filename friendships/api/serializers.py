@@ -1,4 +1,3 @@
-from django.contrib.auth.models import User
 from accounts.api.serializers import UserSerializerForTweetAndFriendship
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
