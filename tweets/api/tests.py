@@ -4,8 +4,10 @@ from tweets.models import Tweet
 
 TWEET_LIST_API = '/api/tweets/'
 TWEET_CREATE_API = '/api/tweets/'
+TWEET_RETRIEVE_API = '/api/tweets/{}/'
 
 class TweetAPITests(TestCase):
+
     def setUp(self):
         self.user1 = self.create_user('User1')
         self.tweets1 = [
@@ -34,6 +36,22 @@ class TweetAPITests(TestCase):
         # Check the order of tweets based on create time
         self.assertEqual(response.data['tweets'][0]['id'], self.tweets2[2].id)
         self.assertEqual(response.data['tweets'][2]['id'], self.tweets2[0].id)
+
+    def test_retrieve(self):
+        # Create a new tweet
+        tweet = self.create_tweet(self.user1)
+        url = TWEET_RETRIEVE_API.format(tweet.id)
+
+        # Tweet does not have comments yet
+        response = self.anonymous_client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['comments']), 0)
+
+        # Create two comments under tweet
+        self.create_comment(self.user1, tweet.id)
+        self.create_comment(self.user2, tweet.id)
+        response = self.anonymous_client.get(url)
+        self.assertEqual(len(response.data['comments']), 2)
 
     def test_create_api(self):
         # Visitor not allowed to create tweet
