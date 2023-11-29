@@ -5,6 +5,7 @@ from tweets.models import Tweet
 class TweetAdmin(admin.ModelAdmin):
     date_hierarchy = 'created_at'
     list_display = (
+        'id',
         'created_at',
         'user',
         'content',

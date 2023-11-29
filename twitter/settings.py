@@ -15,7 +15,6 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
@@ -27,10 +26,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['192.168.2.20', '127.0.0.1', 'localhost']
 
-
 # Application definition
 
 INSTALLED_APPS = [
+    # Third-party APPs
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -38,15 +37,22 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'django_filters',
+
+    # Project APPs
     'accounts',
     'tweets',
     'friendships',
     'newsfeeds',
+    'comments',
 ]
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10
+    'PAGE_SIZE': 10,
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+    ],
 }
 
 MIDDLEWARE = [
@@ -79,7 +85,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'twitter.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
@@ -90,10 +95,9 @@ DATABASES = {
         'HOST': '192.168.2.20',
         'PORT': '3306',
         'USER': 'root',
-        'PASSWORD': '123456',    # 这里是自己下载mysql时候输入两次的那个密码
+        'PASSWORD': '123456',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
@@ -113,7 +117,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
@@ -127,8 +130,12 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+try:
+    from .local_settings import *
+except:
+    pass

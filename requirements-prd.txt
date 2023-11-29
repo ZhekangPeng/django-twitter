@@ -5,3 +5,4 @@ djangorestframework==3.14.0
 pytz==2023.3
 sqlparse==0.4.3
 cryptography
+django-filter==2.4.0
