@@ -35,7 +35,7 @@ class CommentViewSet(viewsets.GenericViewSet):
                 'Errors': serializer.errors,
             }, status=status.HTTP_400_BAD_REQUEST)
         comment = serializer.save()
-        serializer = CommentSerializer(instance=comment)
+        serializer = CommentSerializer(instance=comment, context={'request': request})
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def update(self, request, *args, **kwargs):
@@ -46,7 +46,7 @@ class CommentViewSet(viewsets.GenericViewSet):
                 'Errors': serializer.errors,
             }, status=status.HTTP_400_BAD_REQUEST)
         comment = serializer.save()
-        serializer = CommentSerializer(comment)
+        serializer = CommentSerializer(comment, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def destroy(self, request, *args, **kwargs):
@@ -58,5 +58,5 @@ class CommentViewSet(viewsets.GenericViewSet):
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         comments = self.filter_queryset(queryset).prefetch_related('user').order_by('created_at')
-        serializer = CommentSerializer(instance=comments, many=True)
+        serializer = CommentSerializer(instance=comments, many=True, context={'request': request})
         return Response({'comments': serializer.data}, status=status.HTTP_200_OK)

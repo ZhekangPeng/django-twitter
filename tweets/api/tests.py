@@ -5,6 +5,7 @@ from tweets.models import Tweet
 TWEET_LIST_API = '/api/tweets/'
 TWEET_CREATE_API = '/api/tweets/'
 TWEET_RETRIEVE_API = '/api/tweets/{}/'
+NEWSFEED_LIST_API = '/api/newsfeeds/'
 
 class TweetAPITests(TestCase):
 
@@ -77,3 +78,30 @@ class TweetAPITests(TestCase):
         self.assertEqual(response.data['user']['id'], self.user1.id)
         self.assertEqual(Tweet.objects.count(), count + 1)
 
+    def test_comments_count(self):
+        zhekang = self.create_user('zhekang')
+        zhekang_client = APIClient()
+        zhekang_client.force_authenticate(zhekang)
+        xiaohe = self.create_user('xiaohe')
+        xiaohe_client = APIClient()
+        xiaohe_client.force_authenticate(xiaohe)
+
+        # test tweet detail api
+        tweet = self.create_tweet(zhekang)
+        url = TWEET_RETRIEVE_API.format(tweet.id)
+        response = zhekang_client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['comments_count'], 0)
+
+        # test tweet list api
+        self.create_comment(zhekang, tweet.id)
+        response = xiaohe_client.get(TWEET_LIST_API, {'user_id': zhekang.id})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['tweets'][0]['comments_count'], 1)
+
+        # test newsfeeds list api
+        self.create_comment(xiaohe, tweet.id)
+        self.create_newsfeed(xiaohe, tweet.id)
+        response = xiaohe_client.get(NEWSFEED_LIST_API)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['NewsFeeds'][0]['tweet']['comments_count'], 2)
