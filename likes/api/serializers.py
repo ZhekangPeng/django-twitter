@@ -5,6 +5,7 @@ from likes.models import Like
 from comments.models import Comment
 from tweets.models import Tweet
 from django.contrib.contenttypes.models import ContentType
+from inbox.services import NotificationService
 
 CONTENT_TYPE_STR_TO_CLASS = {
     'comment': Comment,
@@ -50,11 +51,13 @@ class LikeSerializerForCreate(BaseLikeSerializerForCreateAndCancel):
 
     def create(self, validated_data):
         model_class = self._get_model_class(validated_data)
-        like, _ = Like.objects.get_or_create(
+        like, created = Like.objects.get_or_create(
             user=self.context['request'].user,
             content_type=ContentType.objects.get_for_model(model_class),
             object_id=validated_data['object_id']
         )
+        if created:
+            NotificationService.send_like_notification(like)
         return like
 
 
