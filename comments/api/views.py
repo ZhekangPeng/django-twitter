@@ -7,8 +7,10 @@ from comments.api.serializers import (
     CommentSerializerForUpdate,
 )
 from comments.models import Comment
+from inbox.services import NotificationService
 from utils.permissions import IsObjectOwner
 from utils.decorators import required_params
+
 
 
 class CommentViewSet(viewsets.GenericViewSet):
@@ -35,6 +37,7 @@ class CommentViewSet(viewsets.GenericViewSet):
                 'Errors': serializer.errors,
             }, status=status.HTTP_400_BAD_REQUEST)
         comment = serializer.save()
+        NotificationService.send_comment_notification(comment)
         serializer = CommentSerializer(instance=comment, context={'request': request})
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -54,7 +57,7 @@ class CommentViewSet(viewsets.GenericViewSet):
         deleted, _ = Comment.objects.filter(id=comment.id).delete()
         return Response({"Success": deleted}, status=status.HTTP_200_OK)
 
-    @required_params(request_attr='query_params', params=['tweet_id'])
+    @required_params(method='GET', params=['tweet_id'])
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         comments = self.filter_queryset(queryset).prefetch_related('user').order_by('created_at')

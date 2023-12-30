@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'django_filters',
+    'notifications',
 
     # Project APPs
     'accounts',
@@ -46,6 +47,7 @@ INSTALLED_APPS = [
     'newsfeeds',
     'comments',
     'likes',
+    'inbox',
 ]
 
 REST_FRAMEWORK = {
