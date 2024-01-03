@@ -16,7 +16,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from rest_framework import routers
-from accounts.api.views import UserViewSet, AccountViewSet
+from accounts.api.views import (
+    UserViewSet,
+    AccountViewSet,
+    UserProfileViewSet,
+)
 from django.conf.urls import include
 from tweets.api.views import TweetViewSet
 from friendships.api.views import FriendshipViewSet
@@ -28,6 +32,7 @@ from inbox.api.views import NotificationViewSet
 router = routers.DefaultRouter()
 router.register(r'api/users', UserViewSet)
 router.register(r'api/accounts', AccountViewSet, basename='accounts')
+router.register(r'api/profiles', UserProfileViewSet, basename='profiles')
 router.register(r'api/tweets', TweetViewSet, basename='tweets')
 router.register(r'api/friendships', FriendshipViewSet, basename='friendships')
 router.register(r'api/newsfeeds', NewsFeedViewSet, basename='newsfeeds')

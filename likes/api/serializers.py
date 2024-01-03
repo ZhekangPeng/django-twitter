@@ -1,4 +1,4 @@
-from accounts.api.serializers import UserSerializerForTweetAndFriendship
+from accounts.api.serializers import UserSerializerForLike
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from likes.models import Like
@@ -14,7 +14,7 @@ CONTENT_TYPE_STR_TO_CLASS = {
 
 
 class LikeSerializer(serializers.ModelSerializer):
-    user = UserSerializerForTweetAndFriendship()
+    user = UserSerializerForLike()
 
     class Meta:
         model = Like

@@ -9,7 +9,6 @@ from likes.api.serializers import (
 from likes.models import Like
 from utils.decorators import required_params
 from rest_framework.decorators import action
-from inbox.services import NotificationService
 
 
 class LikeViewSet(viewsets.GenericViewSet):
