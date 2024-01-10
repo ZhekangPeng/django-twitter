@@ -9,6 +9,7 @@ SIGNUP_URL = '/api/accounts/signup/'
 LOGIN_STATUS_URL = '/api/accounts/login_status/'
 USER_PROFILE_DETAIL_URL = '/api/profiles/{}/'
 
+
 class AccountApiTests(TestCase):
     def setUp(self):
         self.client = APIClient()

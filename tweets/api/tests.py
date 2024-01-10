@@ -1,11 +1,13 @@
 from rest_framework.test import APIClient
 from testing.testcases import TestCase
-from tweets.models import Tweet
+from tweets.models import Tweet, TweetPhoto
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 TWEET_LIST_API = '/api/tweets/'
 TWEET_CREATE_API = '/api/tweets/'
 TWEET_RETRIEVE_API = '/api/tweets/{}/'
 NEWSFEED_LIST_API = '/api/newsfeeds/'
+
 
 class TweetAPITests(TestCase):
 
@@ -54,6 +56,11 @@ class TweetAPITests(TestCase):
         response = self.anonymous_client.get(url)
         self.assertEqual(len(response.data['comments']), 2)
 
+        # Check tweet has nickname and avatar of the user
+        profile = tweet.user.profile
+        self.assertEqual(response.data['user']['nickname'], profile.nickname)
+        self.assertEqual('avatar_url' in response.data['user'], True)
+
     def test_create_api(self):
         # Visitor not allowed to create tweet
         response = self.anonymous_client.post(TWEET_CREATE_API)
@@ -77,6 +84,64 @@ class TweetAPITests(TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data['user']['id'], self.user1.id)
         self.assertEqual(Tweet.objects.count(), count + 1)
+
+    def test_create_with_files(self):
+        # Upload empty files
+        response = self.user1_client.post(TWEET_CREATE_API, {
+            'content': "This is a tweet",
+            'files': [],
+        })
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(TweetPhoto.objects.count(), 0)
+
+        # Upload single file
+        file = SimpleUploadedFile(
+            name='selfie.jpg',
+            content=str.encode('a fake image'),
+            content_type='image/jpeg',
+        )
+        response = self.user1_client.post(TWEET_CREATE_API, {
+            'content': "Tweet with single file",
+            'files': [file]
+        })
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(TweetPhoto.objects.count(), 1)
+
+        # Upload multiple files
+        files = [SimpleUploadedFile(
+            name='selfie_{}.jpg'.format(i),
+            content=str.encode('image_file_{}'.format(i)),
+            content_type='image/jpeg',
+        ) for i in range(3)]
+        response = self.user1_client.post(TWEET_CREATE_API, {
+            'content': 'tweet with 2 pics',
+            'files': files,
+        })
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(TweetPhoto.objects.count(), 4)
+        self.assertNotEqual(response.data.get('photo_urls'), None)
+
+        # Read tweet details
+        url = TWEET_RETRIEVE_API.format(response.data['id'])
+        response = self.user1_client.get(url)
+        self.assertEqual(len(response.data['photo_urls']), 3)
+        # photo_urls are listed in order
+        self.assertEqual('selfie_0' in response.data['photo_urls'][0], True)
+        self.assertEqual('selfie_1' in response.data['photo_urls'][1], True)
+        self.assertEqual('selfie_2' in response.data['photo_urls'][2], True)
+
+        # Failing to upload more than 9 pics
+        files = [SimpleUploadedFile(
+            name='selfie_{}'.format(i),
+            content=str.encode('image_file_{}'.format(i)),
+            content_type='image/jpeg',
+        ) for i in range(10)]
+        response = self.user1_client.post(TWEET_CREATE_API, {
+            'content': "This will fail to upload pics",
+            'files': files,
+        })
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(TweetPhoto.objects.count(), 4)
 
     def test_comments_count(self):
         zhekang = self.create_user('zhekang')
