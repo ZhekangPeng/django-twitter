@@ -1,5 +1,7 @@
 from friendships.models import Friendship
 from django.contrib.auth.models import User
+
+
 class FriendshipServices(object):
 
     @classmethod
@@ -11,3 +13,9 @@ class FriendshipServices(object):
         # friendships = Friendship.objects.filter(to_user=user).prefetch_related('from_user')
         # followers = [friendship.from_user for friendship in friendships]
         return followers
+
+    @classmethod
+    def has_followed(cls, from_user, to_user):
+        if Friendship.objects.filter(from_user=from_user, to_user=to_user).exists():
+            return True
+        return False

@@ -1,6 +1,7 @@
 from friendships.services import FriendshipServices
 from newsfeeds.models import NewsFeed
 
+
 class NewsFeedServices(object):
 
     @classmethod
