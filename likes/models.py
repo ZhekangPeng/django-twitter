@@ -2,8 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
+from utils.memcached_helper import MemcachedHelper
 
-# Create your models here.
 
 class Like(models.Model):
 
@@ -20,3 +20,7 @@ class Like(models.Model):
 
     def __str__(self):
         return f'{self.created_at} - {self.user} liked {self.content_type} {self.object_id}'
+
+    @property
+    def cached_user(self):
+        return MemcachedHelper.get_instance_via_cache(model_class=User, obj_id=self.user_id)

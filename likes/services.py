@@ -1,6 +1,7 @@
 from .models import Like
 from django.contrib.contenttypes.models import ContentType
 
+
 class LikeServices(object):
 
     @classmethod

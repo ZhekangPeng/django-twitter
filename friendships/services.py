@@ -1,5 +1,10 @@
 from friendships.models import Friendship
+from django.conf import settings
+from django.core.cache import caches
 from django.contrib.auth.models import User
+from twitter.cache import FOLLOWINGS_PATTERN
+
+cache = caches['testing'] if settings.TESTING else caches['default']
 
 
 class FriendshipServices(object):
@@ -14,8 +19,24 @@ class FriendshipServices(object):
         # followers = [friendship.from_user for friendship in friendships]
         return followers
 
+    # @classmethod
+    # def has_followed(cls, from_user, to_user):
+    #     if Friendship.objects.filter(from_user=from_user, to_user=to_user).exists():
+    #         return True
+    #     return False
+
     @classmethod
-    def has_followed(cls, from_user, to_user):
-        if Friendship.objects.filter(from_user=from_user, to_user=to_user).exists():
-            return True
-        return False
+    def get_following_user_id_set(cls, from_user_id):
+        key = FOLLOWINGS_PATTERN.format(user_id=from_user_id)
+        following_ids = cache.get(key)
+        if following_ids is not None:
+            return following_ids
+        friendships = Friendship.objects.filter(from_user_id=from_user_id)
+        following_id_set = set([friendship.to_user_id for friendship in friendships])
+        cache.set(key, following_id_set)
+        return following_id_set
+
+    @classmethod
+    def invalidate_following_cache(cls, from_user_id):
+        key = FOLLOWINGS_PATTERN.format(user_id=from_user_id)
+        cache.delete(key)

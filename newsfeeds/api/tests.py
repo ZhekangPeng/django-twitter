@@ -11,6 +11,7 @@ FOLLOW_API = '/api/friendships/{}/follow/'
 class NewsFeedAPITests(TestCase):
 
     def setUp(self):
+        self.clear_cache()
         self.xiaohe = self.create_user('xiaohe')
         self.xiaohe_client = APIClient()
         self.xiaohe_client.force_authenticate(self.xiaohe)
@@ -111,3 +112,51 @@ class NewsFeedAPITests(TestCase):
         self.assertEqual(response.data['has_next_page'], False)
         self.assertEqual(len(response.data['results']), 1)
         self.assertEqual(response.data['results'][0]['id'], new_newsfeed.id)
+
+    def test_user_cache(self):
+        profile = self.xiaohe.profile
+        profile.nickname = 'Melaaa'
+        profile.save()
+
+        self.assertEqual(self.zhekang.username, 'zhekang')
+        self.create_newsfeed(self.xiaohe, self.create_tweet(self.zhekang).id)
+        self.create_newsfeed(self.xiaohe, self.create_tweet(self.xiaohe).id)
+
+        response = self.xiaohe_client.get(NEWSFEEDS_URL)
+        results = response.data['results']
+        self.assertEqual(results[0]['tweet']['user']['username'], 'xiaohe')
+        self.assertEqual(results[0]['tweet']['user']['nickname'], 'Melaaa')
+        self.assertEqual(results[1]['tweet']['user']['username'], 'zhekang')
+
+        self.zhekang.username = 'zhekang_peng'
+        self.zhekang.save()
+        profile.nickname = 'Adaaa'
+        profile.save()
+
+        response = self.xiaohe_client.get(NEWSFEEDS_URL)
+        results = response.data['results']
+        self.assertEqual(results[0]['tweet']['user']['username'], 'xiaohe')
+        self.assertEqual(results[0]['tweet']['user']['nickname'], 'Adaaa')
+        self.assertEqual(results[1]['tweet']['user']['username'], 'zhekang_peng')
+
+    def test_tweet_cache(self):
+        tweet = self.create_tweet(self.zhekang, 'content1')
+        self.create_newsfeed(self.xiaohe, tweet.id)
+        response = self.xiaohe_client.get(NEWSFEEDS_URL)
+        results = response.data['results']
+        self.assertEqual(results[0]['tweet']['user']['username'], 'zhekang')
+        self.assertEqual(results[0]['tweet']['content'], 'content1')
+
+        # update username
+        self.zhekang.username = 'zhekang_peng'
+        self.zhekang.save()
+        response = self.xiaohe_client.get(NEWSFEEDS_URL)
+        results = response.data['results']
+        self.assertEqual(results[0]['tweet']['user']['username'], 'zhekang_peng')
+
+        # update content
+        tweet.content = 'content2'
+        tweet.save()
+        response = self.xiaohe_client.get(NEWSFEEDS_URL)
+        results = response.data['results']
+        self.assertEqual(results[0]['tweet']['content'], 'content2')

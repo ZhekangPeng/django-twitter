@@ -13,6 +13,7 @@ NEWSFEED_LIST_API = '/api/newsfeeds/'
 class TweetAPITests(TestCase):
 
     def setUp(self):
+        self.clear_cache()
         self.user1 = self.create_user('User1')
         self.tweets1 = [
             self.create_tweet(self.user1) for _ in range(3)

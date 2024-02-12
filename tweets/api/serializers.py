@@ -10,7 +10,7 @@ from rest_framework.exceptions import ValidationError
 
 
 class TweetSerializer(serializers.ModelSerializer):
-    user = UserSerializerForTweetAndFriendship()
+    user = UserSerializerForTweetAndFriendship(source='cached_user')
     like_count = serializers.SerializerMethodField()
     has_liked = serializers.SerializerMethodField()
     comments_count = serializers.SerializerMethodField()

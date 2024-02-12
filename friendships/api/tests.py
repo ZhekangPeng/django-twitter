@@ -9,8 +9,12 @@ UNFOLLOW_API = '/api/friendships/{}/unfollow/'
 FOLLOWINGS_API = '/api/friendships/{}/followings/'
 FOLLOWERS_API = '/api/friendships/{}/followers/'
 
+
 class FriendshipAPITests(TestCase):
     def setUp(self):
+
+        self.clear_cache()
+
         # Create users
         self.xiaohe = self.create_user('xiaohe')
         self.xiaohe_client = APIClient()
