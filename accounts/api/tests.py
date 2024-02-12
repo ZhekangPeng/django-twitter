@@ -12,6 +12,7 @@ USER_PROFILE_DETAIL_URL = '/api/profiles/{}/'
 
 class AccountApiTests(TestCase):
     def setUp(self):
+        self.clear_cache()
         self.client = APIClient()
         self.user = self.create_user(
             username='Zach',
@@ -50,8 +51,6 @@ class AccountApiTests(TestCase):
         # Test user has logged in
         response = self.client.get(LOGIN_STATUS_URL)
         self.assertEqual(response.data['has_logged_in'], True)
-
-
 
     def test_logout(self):
         # User logs in first
@@ -165,10 +164,4 @@ class UserProfileAPITests(TestCase):
         self.assertEqual('avatar_image' in response.data['avatar'], True)
         profile.refresh_from_db()
         self.assertIsNotNone(profile.avatar)
-
-
-
-
-
-
 

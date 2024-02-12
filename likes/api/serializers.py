@@ -14,7 +14,7 @@ CONTENT_TYPE_STR_TO_CLASS = {
 
 
 class LikeSerializer(serializers.ModelSerializer):
-    user = UserSerializerForLike()
+    user = UserSerializerForLike(source='cached_user')
 
     class Meta:
         model = Like

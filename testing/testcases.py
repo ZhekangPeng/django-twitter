@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase as DjangoTestCase
+from django.core.cache import caches
 from rest_framework.test import APIClient
 from comments.models import Comment
 from likes.models import Like
@@ -51,4 +52,7 @@ class TestCase(DjangoTestCase):
         user_client = APIClient()
         user_client.force_authenticate(user)
         return user, user_client
+
+    def clear_cache(self):
+        caches['testing'].clear()
 

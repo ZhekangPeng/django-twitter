@@ -1,8 +1,10 @@
 from testing.testcases import TestCase
 
+
 class CommentModelTest(TestCase):
 
     def setUp(self):
+        self.clear_cache()
         self.zhekang = self.create_user("zhekang")
         self.xiaohe = self.create_user('xiaohe')
         self.tweet = self.create_tweet(self.zhekang)
