@@ -1,12 +1,14 @@
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
-from django.test import TestCase as DjangoTestCase
 from django.core.cache import caches
+from django.test import TestCase as DjangoTestCase
 from rest_framework.test import APIClient
 from comments.models import Comment
+from friendships.models import Friendship
 from likes.models import Like
-from tweets.models import Tweet
 from newsfeeds.models import NewsFeed
+from tweets.models import Tweet
+from utils.redis_client import RedisClient
 
 
 class TestCase(DjangoTestCase):
@@ -53,6 +55,10 @@ class TestCase(DjangoTestCase):
         user_client.force_authenticate(user)
         return user, user_client
 
+    def create_friendships(self, from_user, to_user):
+        return Friendship.objects.create(from_user=from_user, to_user=to_user)
+
     def clear_cache(self):
+        RedisClient.clear()
         caches['testing'].clear()
 

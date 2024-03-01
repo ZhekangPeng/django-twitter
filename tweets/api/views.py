@@ -7,6 +7,7 @@ from tweets.api.serializers import (
     TweetSerializerWithDetails,
 )
 from tweets.models import Tweet
+from tweets.services import TweetService
 from newsfeeds.services import NewsFeedServices
 from utils.decorators import required_params
 from utils.paginations import EndlessPagination
@@ -24,10 +25,12 @@ class TweetViewSet(viewsets.GenericViewSet):
 
     @required_params(method='GET', params=['user_id'])
     def list(self, request, *args, **kwargs):
-        tweets = Tweet.objects.filter(
-            user_id=request.query_params['user_id']
-        ).order_by('-created_at')
-        page = self.paginate_queryset(tweets)
+        user_id = request.query_params['user_id']
+        cached_tweets = TweetService.get_cached_tweets(user_id=user_id)
+        page = self.paginator.paginate_cached_list(cached_tweets, request)
+        if page is None:
+            tweets = Tweet.objects.filter(user_id=user_id).order_by('-created_at')
+            page = self.paginate_queryset(tweets)
         serializer = TweetSerializer(page, context={'request': request}, many=True)
         return self.get_paginated_response(serializer.data)
 
