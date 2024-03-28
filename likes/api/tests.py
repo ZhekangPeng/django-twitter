@@ -199,3 +199,61 @@ class LikeApiTests(TestCase):
         self.assertEqual(len(response.data['likes']), 2)
         self.assertEqual(response.data['likes'][0]['user']['id'], self.zhekang.id)
         self.assertEqual(response.data['likes'][1]['user']['id'], self.xiaohe.id)
+
+    def test_likes_count(self):
+        tweet = self.create_tweet(self.zhekang)
+        data = {'content_type': 'tweet', 'object_id': tweet.id}
+        self.zhekang_client.post(LIKE_BASE_URL, data)
+
+        tweet_url = TWEET_DETAIL_API.format(tweet.id)
+        response = self.zhekang_client.get(tweet_url)
+        self.assertEqual(response.data['like_count'], 1)
+        tweet.refresh_from_db()
+        self.assertEqual(tweet.likes_count, 1)
+
+        # xiaohe canceled likes
+        self.zhekang_client.post(LIKE_BASE_URL + 'cancel/', data)
+        tweet.refresh_from_db()
+        self.assertEqual(tweet.likes_count, 0)
+        response = self.xiaohe_client.get(tweet_url)
+        self.assertEqual(response.data['like_count'], 0)
+
+    def test_likes_count_with_cache(self):
+        tweet = self.create_tweet(self.zhekang)
+        self.create_newsfeed(self.zhekang, tweet.id)
+        self.create_newsfeed(self.xiaohe, tweet.id)
+
+        data = {'content_type': 'tweet', 'object_id': tweet.id}
+        tweet_url = TWEET_DETAIL_API.format(tweet.id)
+        for i in range(3):
+            _, client = self.create_user_and_client('someone{}'.format(i))
+            client.post(LIKE_BASE_URL, data)
+            # check tweet api
+            response = client.get(tweet_url)
+            self.assertEqual(response.data['like_count'], i + 1)
+            tweet.refresh_from_db()
+            self.assertEqual(tweet.likes_count, i + 1)
+
+        self.xiaohe_client.post(LIKE_BASE_URL, data)
+        response = self.xiaohe_client.get(tweet_url)
+        self.assertEqual(response.data['like_count'], 4)
+        tweet.refresh_from_db()
+        self.assertEqual(tweet.likes_count, 4)
+
+        # check newsfeed api
+        newsfeed_url = '/api/newsfeeds/'
+        response = self.zhekang_client.get(newsfeed_url)
+        self.assertEqual(response.data['results'][0]['tweet']['like_count'], 4)
+        response = self.xiaohe_client.get(newsfeed_url)
+        self.assertEqual(response.data['results'][0]['tweet']['like_count'], 4)
+
+        # xiaohe canceled likes
+        self.xiaohe_client.post(LIKE_BASE_URL + 'cancel/', data)
+        tweet.refresh_from_db()
+        self.assertEqual(tweet.likes_count, 3)
+        response = self.xiaohe_client.get(tweet_url)
+        self.assertEqual(response.data['like_count'], 3)
+        response = self.zhekang_client.get(newsfeed_url)
+        self.assertEqual(response.data['results'][0]['tweet']['like_count'], 3)
+        response = self.xiaohe_client.get(newsfeed_url)
+        self.assertEqual(response.data['results'][0]['tweet']['like_count'], 3)
