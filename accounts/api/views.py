@@ -1,15 +1,15 @@
-from django.contrib.auth.models import User
-from rest_framework import permissions
-from utils.permissions import IsObjectOwner
-from rest_framework import viewsets, status
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from accounts.models import UserProfile
 from django.contrib.auth import (
     logout as django_logout,
     login as django_login,
     authenticate as django_auth,
 )
+from django.contrib.auth.models import User
+from django.utils.decorators import method_decorator
+from django_ratelimit.decorators import ratelimit
+from rest_framework import permissions
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from accounts.api.serializers import (
     UserSerializer,
     UserSerializerWithProfile,
@@ -17,6 +17,8 @@ from accounts.api.serializers import (
     LoginSerializer,
     SignupSerializer,
 )
+from accounts.models import UserProfile
+from utils.permissions import IsObjectOwner
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -37,7 +39,9 @@ class UserProfileViewSet(viewsets.ModelViewSet, viewsets.mixins.UpdateModelMixin
 class AccountViewSet(viewsets.ViewSet):
 
     serializer_class = SignupSerializer
+
     @action(methods=['GET'], detail=False)
+    @method_decorator(ratelimit(key='ip', rate='3/s', method='POST', block=True))
     def login_status(self, request):
         data = {"has_logged_in": request.user.is_authenticated}
         if request.user.is_authenticated:
@@ -70,13 +74,16 @@ class AccountViewSet(viewsets.ViewSet):
         }, status=status.HTTP_200_OK)
 
     @action(methods=['POST'], detail=False)
+    @method_decorator(ratelimit(key='ip', rate='3/s', method='POST', block=True))
     def logout(self, request):
         if request.user.is_authenticated:
             django_logout(request)
         return Response({
             "success": True
         })
+
     @action(methods=['POST'], detail=False)
+    @method_decorator(ratelimit(key='ip', rate='3/s', method='POST', block=True))
     def signup(self, request):
         serializer = SignupSerializer(data=request.data)
         if not serializer.is_valid():
