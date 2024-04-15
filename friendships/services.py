@@ -10,14 +10,14 @@ cache = caches['testing'] if settings.TESTING else caches['default']
 class FriendshipServices(object):
 
     @classmethod
-    def get_all_followers(cls, user):
-        friendships = Friendship.objects.filter(to_user=user)
+    def get_all_follower_ids(cls, user_id):
+        friendships = Friendship.objects.filter(to_user_id=user_id)
         follower_ids = [friendship.from_user_id for friendship in friendships]
-        followers = User.objects.filter(id__in=follower_ids)
+        # followers = User.objects.filter(id__in=follower_ids)
 
         # friendships = Friendship.objects.filter(to_user=user).prefetch_related('from_user')
         # followers = [friendship.from_user for friendship in friendships]
-        return followers
+        return follower_ids
 
     # @classmethod
     # def has_followed(cls, from_user, to_user):
