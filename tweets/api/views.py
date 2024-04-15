@@ -1,6 +1,9 @@
+from django.utils.decorators import method_decorator
+from django_ratelimit.decorators import ratelimit
 from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
+from newsfeeds.services import NewsFeedServices
 from tweets.api.serializers import (
     TweetSerializer,
     TweetSerializerForCreate,
@@ -8,7 +11,6 @@ from tweets.api.serializers import (
 )
 from tweets.models import Tweet
 from tweets.services import TweetService
-from newsfeeds.services import NewsFeedServices
 from utils.decorators import required_params
 from utils.paginations import EndlessPagination
 
@@ -34,6 +36,7 @@ class TweetViewSet(viewsets.GenericViewSet):
         serializer = TweetSerializer(page, context={'request': request}, many=True)
         return self.get_paginated_response(serializer.data)
 
+    @method_decorator(ratelimit(key='user_or_ip', rate='5/s', method='GET', block=True))
     def retrieve(self, request, *arg, **kwargs):
         serializer = TweetSerializerWithDetails(
             instance=self.get_object(),
@@ -41,6 +44,8 @@ class TweetViewSet(viewsets.GenericViewSet):
         )
         return Response(serializer.data)
 
+    @method_decorator(ratelimit(key='user', rate='1/s', method='POST', block=True))
+    @method_decorator(ratelimit(key='user', rate='5/m', method='POST', block=True))
     def create(self, request, *args, **kwargs):
         serializer = TweetSerializerForCreate(
             data=request.data,
