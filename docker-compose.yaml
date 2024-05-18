@@ -7,3 +7,32 @@ services:
     ports:
       - "8000:8000"
     command: python manage.py runserver 0.0.0.0:8000
+
+  hbase-master:
+    container_name: hbase-master
+    image: ponponon/hbase:2.4.17
+    # restart: always
+    ports:
+      - "2181:2181"
+      - "8080:8080"
+      - "8085:8085"
+      - "9090:9090"
+      - "9095:9095"
+      - "16000:16000"
+      - "16010:16010"
+      - "16201:16201"
+      - "16020:16020"
+      - "16030:16030"
+      - "16301:16301"
+    environment:
+      - JAVA_HOME=/usr/lib/jvm/java-8-openjdk-arm64
+    command: 'bash entrypoint.sh'
+  # hbase-thrift:
+  #   container_name: hbase-thrift
+  #   image: ponponon/hbase-x86-focal
+  #   # restart: always
+  #   ports:
+  #     - "9090:9090"
+  #   environment:
+  #     - JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+  #   command: 'bash /root/hbase-2.4.17/bin/hbase-daemon.sh start thrift --bind hbase-master'
